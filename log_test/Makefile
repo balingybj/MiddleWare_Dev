@@ -17,13 +17,13 @@ ifeq ($(SUBARCH), arm)
 	HOST = arm-linux
 	RANLIB = arm-linux-gnueabihf-ranlib
 LIB_PATH = -L$(TEST_ROOT)/../pub/lib
-LIBS = -lrt -ldl -lpthread -lreadline -lncurses -lcJson
+LIBS = -lrt -ldl -lpthread -lreadline -lncurses -lcommon
 else
 	HOST = x86_64-linux
 	CC = cc
 	CFLAGS += -m32
 LIB_PATH = -L$(TEST_ROOT)/../pub/lib
-LIBS = -lrt -ldl -lpthread -lreadline -lcJson
+LIBS = -lrt -ldl -lpthread -lreadline -lcommon
 endif
 
 SRC_PATH =  $(TEST_ROOT)/src

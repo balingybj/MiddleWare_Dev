@@ -1,5 +1,31 @@
 
-#include "log.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <pthread.h>
+#include <sys/mman.h>
+#include <signal.h>
+
+#include <fcntl.h>
+#include <errno.h>
+
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <time.h>
+#include <dirent.h>
+
+#include <stdarg.h>
+
+#include <readline/readline.h>
+#include <readline/history.h>
+
+
+
+
+
 
 /*
 * 真正的命令执行函数
