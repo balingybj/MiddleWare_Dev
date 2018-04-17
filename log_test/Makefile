@@ -10,18 +10,19 @@ MV = mv
 
 TEST_ROOT = $(PWD)
 
-BIN = $(TEST_ROOT)/bin
+## 生成目标文件路径
+BIN = $(TEST_ROOT)/../bin
 
 ifeq ($(SUBARCH), arm)
 	HOST = arm-linux
 	RANLIB = arm-linux-gnueabihf-ranlib
-LIB_PATH = -L./lib
+LIB_PATH = -L$(TEST_ROOT)/../pub/lib
 LIBS = -lrt -ldl -lpthread -lreadline -lncurses
 else
 	HOST = x86_64-linux
 	CC = cc
 	CFLAGS += -m32
-LIBS = -lrt -ldl -lpthread -lreadline -lncurses
+LIBS = -lrt -ldl -lpthread -lreadline 
 endif
 
 SRC_PATH =  $(TEST_ROOT)/src
@@ -36,11 +37,15 @@ INCL = -I$(INC_PATH)
 
 all : $(TARGET)
 
-test_log : $(OBJS)
+$(TARGET) : $(OBJS)
 	@$(CC) $(OBJS)  $(LIBS) $(LIB_PATH) -o $(TARGET) $(CFLAGS)
 	$(MV) $(TARGET) $(BIN)
 
+## 清除.o及可执行文件  ，$$i ，首先取得Makefile中$i值，然后在shell中$($(i))
 clean:
-	rm *.o
+	@for i in $(SRC_PATH); do \
+	echo "clean .o in $$i..."; \
+		(cd $$i; $(RM) *.o); done; \
+	cd $(BIN); $(RM) $(TARGET); cd $(TEST_ROOT)
 
 
