@@ -17,23 +17,25 @@ ifeq ($(SUBARCH), arm)
 	HOST = arm-linux
 	RANLIB = arm-linux-gnueabihf-ranlib
 LIB_PATH = -L$(TEST_ROOT)/../pub/lib
-LIBS = -lrt -ldl -lpthread -lreadline -lncurses
+LIBS = -lrt -ldl -lpthread -lreadline -lncurses -lcJson
 else
 	HOST = x86_64-linux
 	CC = cc
 	CFLAGS += -m32
-LIBS = -lrt -ldl -lpthread -lreadline 
+LIB_PATH = -L$(TEST_ROOT)/../pub/lib
+LIBS = -lrt -ldl -lpthread -lreadline -lcJson
 endif
 
 SRC_PATH =  $(TEST_ROOT)/src
-INC_PATH = $(TEST_ROOT)/inc
+INC_PATH = -I$(TEST_ROOT)/inc \
+			-I$(TEST_ROOT)/../common/inc
 
 SRC_FILES = $(wildcard $(addsuffix /*.c,$(SRC_PATH)))
 OBJS = $(patsubst %.c,%.o,$(SRC_FILES))
 
 TARGET = test_log
 
-INCL = -I$(INC_PATH)
+INCL = $(INC_PATH)
 
 all : $(TARGET)
 

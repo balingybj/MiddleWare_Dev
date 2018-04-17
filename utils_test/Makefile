@@ -18,19 +18,19 @@ ifeq ($(SUBARCH), arm)
 	HOST = arm-linux
 	RANLIB = arm-linux-gnueabihf-ranlib
 LIB_PATH = -L$(TEST_ROOT)/../pub/lib
-LIBS = -lrt -ldl -lpthread -lreadline -lncurses
+LIBS = -lrt -ldl -lpthread -lreadline -lncurses -lcJson
 else
 	CC = cc
 	CFLAGS += -m32
-LIBS = -lrt -ldl -lpthread -lreadline -lncurses
+LIB_PATH = -L$(TEST_ROOT)/../pub/lib
+LIBS = -lrt -ldl -lpthread -lreadline -lncurses -lcJson
 endif
 
 SRC_PATH =  $(TEST_ROOT)/src
-INC_PATH = $(TEST_ROOT)/inc
+INC_PATH = -I$(TEST_ROOT)/inc \
+			-I$(TEST_ROOT)/../common/inc
 
 SRC_FILES = $(wildcard $(addsuffix /*.c,$(SRC_PATH)))
-
-COMMON_OBJS = $(SRC_PATH)/cJSON.o
 
 JSON_OBJS =   $(SRC_PATH)/json_test.o
 READ_OBJS =   $(SRC_PATH)/readline_test.o
@@ -41,7 +41,7 @@ TH2_OBJS = $(SRC_PATH)/thread2_test.o
 TARGET = test_read test_json test_thread1 test_thread2
 #TARGET = test_read
 
-INCL = -I$(INC_PATH)
+INCL = $(INC_PATH)
 
 all : $(TARGET)
 
@@ -49,8 +49,8 @@ test_read : $(READ_OBJS)
 	@$(CC) $(READ_OBJS)   $(LIBS) $(LIB_PATH)  -o test_read $(CFLAGS)
 	$(MV) test_read $(BIN)
 
-test_json : $(JSON_OBJS) $(COMMON_OBJS)
-	@$(CC) $(JSON_OBJS) $(COMMON_OBJS)      $(LIBS) $(LIB_PATH) -o test_json $(CFLAGS)
+test_json : $(JSON_OBJS)
+	@$(CC) $(JSON_OBJS)     $(LIBS) $(LIB_PATH) -o test_json $(CFLAGS)
 	$(MV) test_json $(BIN)
 
 test_thread1 : $(TH1_OBJS)
