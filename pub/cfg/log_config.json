@@ -1,6 +1,6 @@
 
 {
-	"enablePrint" : "0",
+	"enablePrint" : "1",
 	"logOutFormat" : "2",
 	"maxSaveZipCounts" : "20",
 	"maxCacheNum" : "2000",
@@ -9,7 +9,7 @@
 	"logName" : "test.dat",
 	"LogPath" : "/rru/log",
 	"strValidLen" : "128",
-	"maxSupportApp" : "4",
+	"maxSupportApp" : "4"
 	
 }
 

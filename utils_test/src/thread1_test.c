@@ -5,11 +5,22 @@
 
 int main()
 {
-	for(int loop = 0; loop < 1000; loop++)
-	{
-		sleep(1);
-		//middle_ware_log();
-	}
+	middle_ware_init_log(1);
+	int loop = 0;
+
+
+	Middle_ware_log(1,"This is the first one");
+	Middle_ware_log(1,"This is the first one");
+	Middle_ware_log(1,"This is the first one");
+
+		Middle_ware_log(1,"This is the first one");
+	Middle_ware_log(1,"This is the first one");
+	Middle_ware_log(1,"This is the first one");
+
+		Middle_ware_log(1,"This is the first one");
+	Middle_ware_log(1,"This is the first one");
+	Middle_ware_log(1,"This is the first one");
+
 
 	return 0;
 }

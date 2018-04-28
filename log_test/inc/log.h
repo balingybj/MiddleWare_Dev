@@ -4,37 +4,36 @@
 #include <math.h>
 #include <string.h>
 
-#include <pthread.h>
-#include <sys/mman.h>
-#include <signal.h>
-
-#include <fcntl.h>
-#include <errno.h>
-
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-#include <time.h>
-#include <dirent.h>
+#include <sys/klog.h>
 
 
-#include "cJSON.h"
-
-#include <stdarg.h>
-
-
-#include <readline/readline.h>
-#include <readline/history.h>
+#include "log_interface.h"
 
 
 
-// json文件路径
-#define LOG_CONFIG_JSON_PATH "../cfg/log_config.json"
+#define LOG_SUCCESS 0
+#define LOG_FAILURE 1
 
 
-#define  COMMON_SUCCESS       	0
-#define  COMMON_FAILURE 		1
+
+#define LOG_ASSERT(condition)	do\
+{ \
+	if(condition)	{} 	\
+	else 	\
+	{	\
+		printf("Assert failed,file:%s func:%s line:%d", __FILE__,  __func__, (int)__LINE__);    \
+		abort();    \
+	}	\
+}while(0)
+
+
+#define LOG_PRINT(format, ...) do \
+{\
+	printf("%s %d : "format"\n", __func__, __LINE__, ##__VA_ARGS__);\
+}while(0)
+
+
+#define LOG_VERSION "v2018.04"
 
 
 typedef struct _LOG_CONFIG_
@@ -52,13 +51,31 @@ typedef struct _LOG_CONFIG_
 } ST_LOG_CONFIG_;
 
 
-extern ST_LOG_CONFIG_    gstLogConfig;
+/* 日志模块全局数据结构 */
+typedef struct 
+{
+	int maxCacheNum;	//最大缓存数量
+	int localPrint;	//是否本地打印
+	int maxSaveZipCounts;	//压缩文件最大个数
+	int autoRefreshTime;   	//日志刷新时间
+	int maxFileSize;	//文件到达压缩的大小
+	int timeElapse;	//时间间隔
+	
+	sem_t *pSem;
+	log_cfg_st *pCfg;	//共享内存控制块
+	log_string_st *pString;	//日志数据块
+
+}log_gb_context_;
 
 
-extern int common_read_file(char *fileName, char *fileContext, int fileSize);
 
-extern int common_get_file_size(char *fileName,int *fileSize);
+void log_init_load_cfg();
+int log_init(char *version);
+void log_init_load_json_cfg();
 
-extern void common_json_init();
+
+
+
+
 
 

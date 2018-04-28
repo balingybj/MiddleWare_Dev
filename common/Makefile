@@ -52,11 +52,10 @@ $(TARGET):$(OBJ)
 
 $(OBJ):$(SRC_FILES)
 	$(CC) $(LIBS) $(LIB_PATH) -c $(SRC_FILES) $(CFLAGS)
-	#$(MV) 
-
 	
 clean:
 	$(RM) $(OBJ)
+	$(RM) $(TARGET_PATH)/$(TARGET)
 
 
 

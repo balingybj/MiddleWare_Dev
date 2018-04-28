@@ -23,7 +23,7 @@ else
 	CC = cc
 	CFLAGS += -m32
 LIB_PATH = -L$(TEST_ROOT)/../pub/lib
-LIBS = -lrt -ldl -lpthread -lreadline -lncurses -lcommon
+LIBS = -ldl -lreadline -lncurses -lcommon -lpthread -lrt
 endif
 
 SRC_PATH =  $(TEST_ROOT)/src
