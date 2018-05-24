@@ -7,7 +7,7 @@
 	"autoRefreshTime" : "60",
 	"maxFileSize" : "2097152",
 	"logName" : "test.dat",
-	"LogPath" : "/rru/log",
+	"LogPath" : "./",
 	"strValidLen" : "128",
 	"maxSupportApp" : "4"
 	

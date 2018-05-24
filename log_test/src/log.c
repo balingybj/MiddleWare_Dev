@@ -1,6 +1,7 @@
 
 
 #include "log.h"
+#include <pthread.h>
 
 
 static int gtLockFileFd = 0;
@@ -190,7 +191,7 @@ USE_DEFAULT_CONFIG:
 	memcpy(gstLogConfig.logName, "test.dat", strlen("test.dat"));
 	gstLogConfig.logOutFormat = 2;
 
-	memcpy(gstLogConfig.LogPath, "/rru/log", strlen("/rru/log"));
+	memcpy(gstLogConfig.LogPath, "./", strlen("./"));
 	gstLogConfig.maxCacheNum = 2000;
 	gstLogConfig.maxFileSize = 2*1024*1024;
 	gstLogConfig.maxSaveZipCounts = 10;
@@ -387,18 +388,218 @@ CREAT:
 }
 
 
-int main (int argc, char **argv)
+static FILE* file_open(const char *fileName)
 {
-	test_process_running("log_test");
+	if(NULL == fileName)
+		return NULL;
 
-	log_init(LOG_VERSION);
+	FILE *fp = NULL;
 
-	while(1)
+	fp = fopen(fileName, "a+");
+	if(NULL == fp)
+		printf("Open file %s failed\n", fileName);
+
+	return fp;
+}
+
+static void file_write(FILE *fp, log_string_st *pLog)
+{
+	log_string_st *log = pLog;
+	if(NULL == fp || NULL == log)
+		return ;
+
+	int module = log->moduleId;
+	int logLevel = log->logLevel;
+	int timeSec = log->timeSec;
+	int timeMsec = log->timeMsec;
+	int fileLine = log->fileLine;
+	int serNum = log->serNum;
+
+	char funcName[LOG_FUNC_NAME_LEN] = {0};
+	strncpy(funcName, log->funName, strlen(log->funName));
+
+	char fileName[LOG_FILE_NAME_LEN] = {0};
+	strncpy(fileName, log->fileName, strlen(log->fileName));
+
+	char appName[LOG_APP_NAME_LEN] = {0};
+	strncpy(appName, log->appName, strlen(log->appName));
+
+	char logStr[LOG_STRING_LEN] = {0};
+	strncpy(logStr, log->string, strlen(log->string));
+	
+	
+	char str[2*LOG_STRING_LEN] = {0};
+
+	// 时间这块还需要转换才行
+	sprintf(str, "%s %d %d:%d %s %s %d %d %d %s\n", appName, serNum, timeSec, \
+		timeMsec, fileName, funcName, fileLine, module, logLevel, logStr);
+
+	fwrite(str, strlen(str), 1, fp);
+
+	return ;
+}
+
+static void file_close(FILE* fp)
+{
+	if(NULL != fp)
 	{
-		sleep(1000);
+		fclose(fp);
+		fp = NULL;
+	}
+}
+
+
+//写FLASH
+void write_log(int writePos)
+{
+	char tempFile[LOG_FILE_NAME_LEN] = {0};
+	FILE *fp = NULL;
+
+	strncpy(tempFile, gstLogConfig.logName, strlen(gstLogConfig.logName));
+	
+	fp = file_open(tempFile);
+
+	if(NULL == fp)
+		return ;
+
+	while(writePos > gstLogGbContext->pCfg->flashWritePos)
+	{
+		log_string_st *log = gstLogGbContext->pString + gstLogGbContext->pCfg->flashWritePos % (2 * gstLogGbContext->maxCacheNum);
+
+		file_write(fp, log);
 		
+		gstLogGbContext->pCfg->flashWritePos++;
 	}
 
-    return 0;
+	file_close(fp);
+	
+}
+
+// 实时更新日志
+void log_update()
+{
+	int currentWritePos = gstLogGbContext->pCfg->writePos;
+	int max_cache = gstLogGbContext->maxCacheNum > 2000 ? 2000 : gstLogGbContext->maxCacheNum;
+
+	if(currentWritePos > gstLogGbContext->pCfg->readPos)
+	{
+		while(currentWritePos > gstLogGbContext->pCfg->readPos)
+		{
+			gstLogGbContext->pCfg->readPos++;
+		}
+	}
+
+	// 是否需要写FLASH
+	if(currentWritePos - gstLogGbContext->pCfg->flashWritePos >= max_cache)
+	{
+		write_log(currentWritePos);
+	}
+
+	return ;
+}
+
+// 将共享内存中的日志搬到FLASH中
+void log_flush()
+{
+	int currentWritePos = gstLogGbContext->pCfg->writePos;
+
+	if(currentWritePos > gstLogGbContext->pCfg->flashWritePos)
+	{
+		write_log(currentWritePos);
+	}
+}
+
+// 检测定时刷新时间是否到达
+int check_timer_flush()
+{
+	static time_t begin = 0;
+	time_t end = 0;
+
+	if(0 == begin)
+	{
+		begin = time(NULL);
+		gstLogGbContext->timeElapse = 0;
+		return LOG_FALSE;
+	}
+	end = time(NULL);
+
+	gstLogGbContext->timeElapse += (end - begin);
+	begin = end;
+	
+	if(gstLogGbContext->timeElapse >= gstLogGbContext->autoRefreshTime)
+	{
+		gstLogGbContext->timeElapse = 0;
+		return LOG_TRUE;
+	}
+
+	return LOG_FALSE;
+}
+
+//管理共享内存
+void* log_main_loop(void *data)
+{
+	while(1)
+	{
+		// 判读是否有日志刷新
+		if(gstLogGbContext->pCfg->readPos != gstLogGbContext->pCfg->writePos)
+		{
+			log_update();
+		}
+
+		// 定时刷新周期到达
+		if(LOG_TRUE == check_timer_flush())
+		{
+			printf("time to flush.\n");
+			log_flush();
+		}
+
+		// 强制刷新标志
+		if(gstLogGbContext->pCfg->flushFlag)
+		{
+			printf("force to flush.\n");
+			log_flush();
+		}
+
+		usleep(3000);
+	}
+	
+}
+
+//管理压缩文件
+void* log_tarSys_loop(void *data)
+{
+	while(1)
+	{
+		
+	}
+}
+
+int main (int argc, char **argv)
+{
+	pthread_t threadId;
+	pthread_attr_t attr;
+
+	test_process_running("log_test");
+	log_init(LOG_VERSION);
+
+	pthread_attr_init(&attr);
+	if(0 != pthread_create(&threadId, &attr, log_main_loop, NULL))
+	{
+		printf("pthread_create failed\n");
+		return 0;
+	}
+
+	if(0 != pthread_create(&threadId, &attr, log_tarSys_loop, NULL))
+	{
+		printf("pthread_create failed\n");
+		return 0;
+	}
+
+    while(1)
+	{
+		sleep(100);
+	}
+
+	return 0;
 }
 

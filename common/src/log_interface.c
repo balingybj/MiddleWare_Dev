@@ -65,7 +65,7 @@ int common_read_file(char *fileName, char *fileContext, int fileSize)
 // 截取字符串，只要最后一个/后边的文件名，去除前边的路径
 const char *splitFileName(const char *pFileName)
 {
-	const char *filePath = strrchr(pFileName, '\0');
+	const char *filePath = strrchr(pFileName, '/');
 
 	if(filePath && *(filePath + 1) != '\0')	return filePath+1;
 
@@ -305,7 +305,7 @@ int middle_sem_timewait(int ms)
 /* 写日志接口 */
 void middle_ware_log(int level, const char* pFileName, const char* pFunName, int fileLine,  const char *format, ...)
 {
-
+#define LOG_DEBUG
 #ifdef LOG_DEBUG
 	va_list argList;
 	char pString[255] = {0};
@@ -322,6 +322,9 @@ void middle_ware_log(int level, const char* pFileName, const char* pFunName, int
 	char pString1[255] = {0};
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
+
+	time_t time = 0;
+	time = tv.tv_sec;
 	
 
 	// 将可变字符格式format格式化为字符串数组
@@ -351,11 +354,11 @@ void middle_ware_log(int level, const char* pFileName, const char* pFunName, int
 	strncpy(pLogString->fileName, splitFileName(pFileName), LOG_FILE_NAME_LEN);
 	strncpy(pLogString->funName, pFunName, strlen(pFunName));
 
-	pLogString->moudleId = 0;
+	pLogString->moduleId = 0;
 	pLogString->logLevel = level;
 	pLogString->fileLine = fileLine;
-	pLogString->timeMsec = tv.tv_usec;
-	pLogString->timeSec = tv.tv_sec;
+	pLogString->timeMsec = tv.tv_usec / 1000;
+	pLogString->timeSec = (int)time;
 
 	strncpy(pLogString->string, pString1, strlen(pString1));
 

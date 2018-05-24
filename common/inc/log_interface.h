@@ -86,7 +86,7 @@ typedef struct
 	unsigned int writePos;		// 业务进程使用，当前写的位置
 	unsigned int readPos;		// 代理进程使用，FLASH中实时读的位置
 	unsigned int flashWritePos;   // 代理进程使用，FLASH中实时写的位置
-	int fulshFlag;  	// 强制刷新标志
+	int flushFlag;  	// 强制刷新标志
 	unsigned int serNum;			//日志流水号，业务进程使用
 	log_filter_st log_filter[10];  //都会使用，日志等级
 }log_cfg_st;
@@ -106,7 +106,7 @@ typedef enum log_type
 typedef struct
 {
 	char appName[LOG_APP_NAME_LEN];         //进程名
-	int moudleId;     //模块ID
+	int moduleId;     //模块ID
 	int logLevel;		//日志等级
 	int timeSec;
 	int timeMsec;

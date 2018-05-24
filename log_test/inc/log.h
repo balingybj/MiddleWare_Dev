@@ -10,6 +10,9 @@
 #include "log_interface.h"
 
 
+#define LOG_TRUE 1
+#define LOG_FALSE 0
+
 
 #define LOG_SUCCESS 0
 #define LOG_FAILURE 1
@@ -72,6 +75,20 @@ typedef struct
 void log_init_load_cfg();
 int log_init(char *version);
 void log_init_load_json_cfg();
+
+int check_timer_flush();
+void log_flush();
+
+void *log_main_loop(void *data);
+
+void* log_tarSys_loop(void *data);
+
+void log_update();
+
+void write_log(int writePos);
+
+
+
 
 
 

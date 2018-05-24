@@ -9,7 +9,7 @@ int main()
 
 	Middle_ware_log(1,"This is the second one");
 	Middle_ware_log(1,"This is the second one");
-	Middle_ware_log(1,"This is the secondone");
+	Middle_ware_log(1,"This is the second one");
 		Middle_ware_log(1,"This is the second one");
 	Middle_ware_log(1,"This is the second one");
 	Middle_ware_log(1,"This is the second one");
